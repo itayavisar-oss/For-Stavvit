@@ -109,6 +109,10 @@
 </head>
 <body class="relative flex flex-col justify-between min-h-screen text-slate-100 selection:bg-rose-500 selection:text-white">
 
+    <!-- MP3 Audio Element -->
+    <audio id="bg-music" src="song.mp3" loop preload="auto"></audio>
+
+    <!-- Canvas Floating Hearts Background -->
     <canvas id="canvas-background"></canvas>
 
     <div class="relative z-10 flex flex-col items-center justify-between min-h-screen px-4 py-6 md:py-10 max-w-4xl mx-auto w-full">
@@ -121,7 +125,7 @@
             </div>
             <button id="bg-music-btn" onclick="toggleAudio()" class="glass-card px-4 py-2 rounded-full flex items-center gap-2 text-xs md:text-sm text-pink-200 hover:text-white transition duration-300 hover:bg-rose-900/40">
                 <i data-lucide="music" class="w-4 h-4 text-pink-400"></i>
-                <span id="music-text">הפעל את "Can't Take My Eyes Off You" 🎵</span>
+                <span id="music-text">נגן את השיר Frankie Valli - Can't Take My Eyes Off You 🎵</span>
             </button>
         </header>
 
@@ -434,138 +438,32 @@
         }
         animateCanvas();
 
-        /* ================= AUDIO SYNTHESIZER FOR "CAN'T TAKE MY EYES OFF YOU" ================= */
-        let audioCtx = null;
-        let isPlaying = false;
-        let melodyTimeout = null;
-
-        // Frequencies for Frankie Valli - "Can't Take My Eyes Off You" Chorus Melody
-        // Key: F Major / D Minor
-        const NOTE_FREQ = {
-            'C4': 261.63, 'D4': 293.66, 'E4': 329.63, 'F4': 349.23, 'G4': 392.00, 'A4': 440.00, 'Bb4': 466.16,
-            'C5': 523.25, 'D5': 587.33, 'E5': 659.25, 'F5': 698.46, 'G5': 783.99, 'A5': 880.00, 'Bb5': 932.33,
-            'REST': 0
-        };
-
-        // Note sequence and timing for Frankie Valli chorus ("You're just too good to be true, Can't take my eyes off you...")
-        const frankieValliMelody = [
-            // "You're just too good to be true"
-            { note: 'F4', dur: 0.35 }, { note: 'F4', dur: 0.35 }, { note: 'F4', dur: 0.35 }, { note: 'F4', dur: 0.35 },
-            { note: 'G4', dur: 0.45 }, { note: 'A4', dur: 0.45 }, { note: 'F4', dur: 0.8 },
-            { note: 'REST', dur: 0.2 },
-
-            // "Can't take my eyes off you"
-            { note: 'G4', dur: 0.35 }, { note: 'G4', dur: 0.35 }, { note: 'G4', dur: 0.35 }, { note: 'G4', dur: 0.35 },
-            { note: 'A4', dur: 0.45 }, { note: 'Bb4', dur: 0.45 }, { note: 'G4', dur: 0.8 },
-            { note: 'REST', dur: 0.2 },
-
-            // "You'd be like heaven to touch"
-            { note: 'A4', dur: 0.35 }, { note: 'A4', dur: 0.35 }, { note: 'A4', dur: 0.35 }, { note: 'A4', dur: 0.35 },
-            { note: 'Bb4', dur: 0.45 }, { note: 'C5', dur: 0.45 }, { note: 'A4', dur: 0.8 },
-            { note: 'REST', dur: 0.2 },
-
-            // "I wanna hold you so much"
-            { note: 'Bb4', dur: 0.35 }, { note: 'Bb4', dur: 0.35 }, { note: 'Bb4', dur: 0.35 }, { note: 'Bb4', dur: 0.35 },
-            { note: 'A4', dur: 0.45 }, { note: 'G4', dur: 0.45 }, { note: 'F4', dur: 0.9 },
-            { note: 'REST', dur: 0.3 },
-
-            // "At long last love has arrived"
-            { note: 'F4', dur: 0.35 }, { note: 'F4', dur: 0.35 }, { note: 'F4', dur: 0.35 }, { note: 'F4', dur: 0.35 },
-            { note: 'G4', dur: 0.45 }, { note: 'A4', dur: 0.45 }, { note: 'F4', dur: 0.8 },
-            { note: 'REST', dur: 0.2 },
-
-            // "And I thank God I'm alive"
-            { note: 'G4', dur: 0.35 }, { note: 'G4', dur: 0.35 }, { note: 'G4', dur: 0.35 }, { note: 'G4', dur: 0.35 },
-            { note: 'A4', dur: 0.45 }, { note: 'Bb4', dur: 0.45 }, { note: 'G4', dur: 0.8 },
-            { note: 'REST', dur: 0.2 },
-
-            // "You're just too good to be true"
-            { note: 'A4', dur: 0.35 }, { note: 'A4', dur: 0.35 }, { note: 'A4', dur: 0.35 }, { note: 'A4', dur: 0.35 },
-            { note: 'Bb4', dur: 0.45 }, { note: 'C5', dur: 0.45 }, { note: 'A4', dur: 0.8 },
-            { note: 'REST', dur: 0.2 },
-
-            // "Can't take my eyes off you"
-            { note: 'Bb4', dur: 0.35 }, { note: 'A4', dur: 0.35 }, { note: 'G4', dur: 0.45 }, { note: 'F4', dur: 1.2 },
-            { note: 'REST', dur: 0.8 }
-        ];
+        /* ================= MP3 AUDIO CONTROL FUNCTIONS ================= */
+        const bgMusic = document.getElementById('bg-music');
+        const musicBtnText = document.getElementById('music-text');
 
         function toggleAudio() {
-            const btnText = document.getElementById('music-text');
-            if (!isPlaying) {
-                isPlaying = true;
-                btnText.textContent = "עצור מנגינה ⏸️";
-                startRomanticMelody();
+            if (bgMusic.paused) {
+                playAudio();
             } else {
-                stopRomanticMelody();
-                btnText.textContent = "הפעל את \"Can't Take My Eyes Off You\" 🎵";
-                isPlaying = false;
+                pauseAudio();
             }
         }
 
-        let currentNoteIndex = 0;
-
-        function playSynthesizedNote(noteInfo) {
-            if (!isPlaying || !audioCtx) return;
-
-            const freq = NOTE_FREQ[noteInfo.note];
-            if (freq && freq > 0) {
-                try {
-                    // Create main melody oscillator (warm brass timbre)
-                    const osc = audioCtx.createOscillator();
-                    const subOsc = audioCtx.createOscillator();
-                    const gain = audioCtx.createGain();
-
-                    osc.type = 'triangle'; // Warm, vintage horn/vocal tone
-                    subOsc.type = 'sine';   // Deep foundational acoustic body
-
-                    osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-                    subOsc.frequency.setValueAtTime(freq / 2, audioCtx.currentTime); // Sub-octave resonance
-
-                    // Dynamic Envelope
-                    const now = audioCtx.currentTime;
-                    gain.gain.setValueAtTime(0.001, now);
-                    gain.gain.exponentialRampToValueAtTime(0.18, now + 0.08);
-                    gain.gain.exponentialRampToValueAtTime(0.0001, now + noteInfo.dur - 0.02);
-
-                    osc.connect(gain);
-                    subOsc.connect(gain);
-                    gain.connect(audioCtx.destination);
-
-                    osc.start(now);
-                    subOsc.start(now);
-                    osc.stop(now + noteInfo.dur);
-                    subOsc.stop(now + noteInfo.dur);
-                } catch (e) {
-                    console.log("Web Audio playback error", e);
-                }
-            }
-
-            // Schedule next note
-            currentNoteIndex = (currentNoteIndex + 1) % frankieValliMelody.length;
-            const nextNote = frankieValliMelody[currentNoteIndex];
-            melodyTimeout = setTimeout(() => {
-                if (isPlaying) {
-                    playSynthesizedNote(nextNote);
-                }
-            }, noteInfo.dur * 1000);
+        function playAudio() {
+            bgMusic.play().then(() => {
+                musicBtnText.textContent = "עצור מנגינה ⏸️";
+            }).catch(error => {
+                console.log("Audio playback was blocked or failed:", error);
+            });
         }
 
-        function startRomanticMelody() {
-            if (!audioCtx) {
-                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            }
-            if (audioCtx.state === 'suspended') {
-                audioCtx.resume();
-            }
-            currentNoteIndex = 0;
-            playSynthesizedNote(frankieValliMelody[0]);
+        function pauseAudio() {
+            bgMusic.pause();
+            musicBtnText.textContent = "נגן את השיר Frankie Valli - Can't Take My Eyes Off You 🎵";
         }
 
-        function stopRomanticMelody() {
-            if (melodyTimeout) clearTimeout(melodyTimeout);
-        }
-
-        // Navigation & Interaction Steps
+        /* Navigation & Interactive Steps */
         function unlockSurprise() {
             // Trigger Confetti
             confetti({
@@ -581,9 +479,9 @@
             step2.classList.remove('hidden');
             window.scrollTo({ top: 0, behavior: 'smooth' });
 
-            // Start Frankie Valli melody automatically when entering
-            if (!isPlaying) {
-                toggleAudio();
+            // Start playing the MP3 song when unlocking
+            if (bgMusic.paused) {
+                playAudio();
             }
         }
 
