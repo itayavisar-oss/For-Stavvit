@@ -8,6 +8,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;600;700;800&family=Rubik:ital,wght@0,300..900;1,300..900&family=Secular+One&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
+    
     <style>
         body {
             font-family: 'Assistant', 'Rubik', sans-serif;
@@ -110,7 +111,6 @@
 
     <canvas id="canvas-background"></canvas>
 
-    <!-- Main Container -->
     <div class="relative z-10 flex flex-col items-center justify-between min-h-screen px-4 py-6 md:py-10 max-w-4xl mx-auto w-full">
 
         <!-- Header Audio Control -->
@@ -121,7 +121,7 @@
             </div>
             <button id="bg-music-btn" onclick="toggleAudio()" class="glass-card px-4 py-2 rounded-full flex items-center gap-2 text-xs md:text-sm text-pink-200 hover:text-white transition duration-300 hover:bg-rose-900/40">
                 <i data-lucide="music" class="w-4 h-4 text-pink-400"></i>
-                <span id="music-text">הפעל מנגינה רומנטית</span>
+                <span id="music-text">הפעל את "Can't Take My Eyes Off You" 🎵</span>
             </button>
         </header>
 
@@ -155,10 +155,8 @@
             <!-- Photo Showcase Frame -->
             <div class="w-full flex flex-col items-center">
                 <div class="relative group max-w-sm md:max-w-md w-full">
-                    <!-- Glow Behind Frame -->
                     <div class="absolute -inset-2 bg-gradient-to-r from-rose-500 via-pink-500 to-purple-600 rounded-3xl blur-lg opacity-70 group-hover:opacity-100 transition duration-700"></div>
                     
-                    <!-- Polaroid Style Frame -->
                     <div class="relative glass-card p-4 md:p-5 rounded-2xl bg-slate-900/80 border border-pink-300/30 flex flex-col items-center transform group-hover:rotate-1 transition duration-500">
                         <div class="overflow-hidden rounded-xl w-full aspect-[3/4] relative shadow-inner">
                             <img id="couple-photo" src="65b338b5-163d-44d7-874e-6105b69bf53f.jpeg" alt="סתיווית ואני" class="w-full h-full object-cover transform group-hover:scale-105 transition duration-700" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1518199266791-5375a83190b7?auto=format&fit=crop&q=80&w=800';">
@@ -275,14 +273,12 @@
         <!-- ================= STEP 3: PERSONAL LETTER ENVELOPE ================= -->
         <section id="step-3" class="hidden w-full flex flex-col items-center justify-center my-auto py-6 transition-all duration-700">
             
-            <!-- Envelope Container -->
             <div id="envelope-card" class="envelope-wrapper w-full max-w-2xl glass-card rounded-3xl p-6 md:p-10 border border-rose-300/30 relative overflow-hidden shadow-2xl">
                 
-                <!-- Decorative Elements -->
                 <div class="absolute -top-12 -right-12 w-40 h-40 bg-rose-500/20 rounded-full blur-3xl"></div>
                 <div class="absolute -bottom-12 -left-12 w-40 h-40 bg-pink-500/20 rounded-full blur-3xl"></div>
 
-                <!-- Closed Envelope Header View (Click to open) -->
+                <!-- Closed Envelope View -->
                 <div id="envelope-sealed" class="flex flex-col items-center text-center py-8 cursor-pointer" onclick="openBlessingLetter()">
                     <div class="w-20 h-20 rounded-full bg-rose-500/20 flex items-center justify-center border-2 border-rose-400/50 mb-6 animate-pulse-slow">
                         <i data-lucide="mail" class="w-10 h-10 text-pink-300"></i>
@@ -359,7 +355,6 @@
         </footer>
     </div>
 
-    <!-- Background Audio Element (Synthesized/Romantic Web Audio or Soft Tone) -->
     <script>
         // Initialize Lucide Icons
         lucide.createIcons();
@@ -439,60 +434,135 @@
         }
         animateCanvas();
 
-        // Audio Tone Generator (Soft Background Melody)
+        /* ================= AUDIO SYNTHESIZER FOR "CAN'T TAKE MY EYES OFF YOU" ================= */
         let audioCtx = null;
         let isPlaying = false;
-        let melodyInterval = null;
+        let melodyTimeout = null;
+
+        // Frequencies for Frankie Valli - "Can't Take My Eyes Off You" Chorus Melody
+        // Key: F Major / D Minor
+        const NOTE_FREQ = {
+            'C4': 261.63, 'D4': 293.66, 'E4': 329.63, 'F4': 349.23, 'G4': 392.00, 'A4': 440.00, 'Bb4': 466.16,
+            'C5': 523.25, 'D5': 587.33, 'E5': 659.25, 'F5': 698.46, 'G5': 783.99, 'A5': 880.00, 'Bb5': 932.33,
+            'REST': 0
+        };
+
+        // Note sequence and timing for Frankie Valli chorus ("You're just too good to be true, Can't take my eyes off you...")
+        const frankieValliMelody = [
+            // "You're just too good to be true"
+            { note: 'F4', dur: 0.35 }, { note: 'F4', dur: 0.35 }, { note: 'F4', dur: 0.35 }, { note: 'F4', dur: 0.35 },
+            { note: 'G4', dur: 0.45 }, { note: 'A4', dur: 0.45 }, { note: 'F4', dur: 0.8 },
+            { note: 'REST', dur: 0.2 },
+
+            // "Can't take my eyes off you"
+            { note: 'G4', dur: 0.35 }, { note: 'G4', dur: 0.35 }, { note: 'G4', dur: 0.35 }, { note: 'G4', dur: 0.35 },
+            { note: 'A4', dur: 0.45 }, { note: 'Bb4', dur: 0.45 }, { note: 'G4', dur: 0.8 },
+            { note: 'REST', dur: 0.2 },
+
+            // "You'd be like heaven to touch"
+            { note: 'A4', dur: 0.35 }, { note: 'A4', dur: 0.35 }, { note: 'A4', dur: 0.35 }, { note: 'A4', dur: 0.35 },
+            { note: 'Bb4', dur: 0.45 }, { note: 'C5', dur: 0.45 }, { note: 'A4', dur: 0.8 },
+            { note: 'REST', dur: 0.2 },
+
+            // "I wanna hold you so much"
+            { note: 'Bb4', dur: 0.35 }, { note: 'Bb4', dur: 0.35 }, { note: 'Bb4', dur: 0.35 }, { note: 'Bb4', dur: 0.35 },
+            { note: 'A4', dur: 0.45 }, { note: 'G4', dur: 0.45 }, { note: 'F4', dur: 0.9 },
+            { note: 'REST', dur: 0.3 },
+
+            // "At long last love has arrived"
+            { note: 'F4', dur: 0.35 }, { note: 'F4', dur: 0.35 }, { note: 'F4', dur: 0.35 }, { note: 'F4', dur: 0.35 },
+            { note: 'G4', dur: 0.45 }, { note: 'A4', dur: 0.45 }, { note: 'F4', dur: 0.8 },
+            { note: 'REST', dur: 0.2 },
+
+            // "And I thank God I'm alive"
+            { note: 'G4', dur: 0.35 }, { note: 'G4', dur: 0.35 }, { note: 'G4', dur: 0.35 }, { note: 'G4', dur: 0.35 },
+            { note: 'A4', dur: 0.45 }, { note: 'Bb4', dur: 0.45 }, { note: 'G4', dur: 0.8 },
+            { note: 'REST', dur: 0.2 },
+
+            // "You're just too good to be true"
+            { note: 'A4', dur: 0.35 }, { note: 'A4', dur: 0.35 }, { note: 'A4', dur: 0.35 }, { note: 'A4', dur: 0.35 },
+            { note: 'Bb4', dur: 0.45 }, { note: 'C5', dur: 0.45 }, { note: 'A4', dur: 0.8 },
+            { note: 'REST', dur: 0.2 },
+
+            // "Can't take my eyes off you"
+            { note: 'Bb4', dur: 0.35 }, { note: 'A4', dur: 0.35 }, { note: 'G4', dur: 0.45 }, { note: 'F4', dur: 1.2 },
+            { note: 'REST', dur: 0.8 }
+        ];
 
         function toggleAudio() {
             const btnText = document.getElementById('music-text');
             if (!isPlaying) {
-                startRomanticMelody();
-                btnText.textContent = "עצור מנגינה";
                 isPlaying = true;
+                btnText.textContent = "עצור מנגינה ⏸️";
+                startRomanticMelody();
             } else {
                 stopRomanticMelody();
-                btnText.textContent = "הפעל מנגינה רומנטית";
+                btnText.textContent = "הפעל את \"Can't Take My Eyes Off You\" 🎵";
                 isPlaying = false;
             }
+        }
+
+        let currentNoteIndex = 0;
+
+        function playSynthesizedNote(noteInfo) {
+            if (!isPlaying || !audioCtx) return;
+
+            const freq = NOTE_FREQ[noteInfo.note];
+            if (freq && freq > 0) {
+                try {
+                    // Create main melody oscillator (warm brass timbre)
+                    const osc = audioCtx.createOscillator();
+                    const subOsc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+
+                    osc.type = 'triangle'; // Warm, vintage horn/vocal tone
+                    subOsc.type = 'sine';   // Deep foundational acoustic body
+
+                    osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                    subOsc.frequency.setValueAtTime(freq / 2, audioCtx.currentTime); // Sub-octave resonance
+
+                    // Dynamic Envelope
+                    const now = audioCtx.currentTime;
+                    gain.gain.setValueAtTime(0.001, now);
+                    gain.gain.exponentialRampToValueAtTime(0.18, now + 0.08);
+                    gain.gain.exponentialRampToValueAtTime(0.0001, now + noteInfo.dur - 0.02);
+
+                    osc.connect(gain);
+                    subOsc.connect(gain);
+                    gain.connect(audioCtx.destination);
+
+                    osc.start(now);
+                    subOsc.start(now);
+                    osc.stop(now + noteInfo.dur);
+                    subOsc.stop(now + noteInfo.dur);
+                } catch (e) {
+                    console.log("Web Audio playback error", e);
+                }
+            }
+
+            // Schedule next note
+            currentNoteIndex = (currentNoteIndex + 1) % frankieValliMelody.length;
+            const nextNote = frankieValliMelody[currentNoteIndex];
+            melodyTimeout = setTimeout(() => {
+                if (isPlaying) {
+                    playSynthesizedNote(nextNote);
+                }
+            }, noteInfo.dur * 1000);
         }
 
         function startRomanticMelody() {
             if (!audioCtx) {
                 audioCtx = new (window.AudioContext || window.webkitAudioContext)();
             }
-
-            const notes = [261.63, 329.63, 392.00, 493.88, 523.25, 440.00, 349.23]; // C4, E4, G4, B4, C5, A4, F4
-            let step = 0;
-
-            melodyInterval = setInterval(() => {
-                if (!isPlaying) return;
-                try {
-                    const osc = audioCtx.createOscillator();
-                    const gain = audioCtx.createGain();
-                    
-                    osc.type = 'sine';
-                    osc.frequency.setValueAtTime(notes[step % notes.length], audioCtx.currentTime);
-                    
-                    gain.gain.setValueAtTime(0.001, audioCtx.currentTime);
-                    gain.gain.exponentialRampToValueAtTime(0.08, audioCtx.currentTime + 0.3);
-                    gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 2.5);
-
-                    osc.connect(gain);
-                    gain.connect(audioCtx.destination);
-
-                    osc.start();
-                    osc.stop(audioCtx.currentTime + 2.6);
-
-                    step++;
-                } catch(e) {
-                    console.log("Audio play error", e);
-                }
-            }, 1200);
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            currentNoteIndex = 0;
+            playSynthesizedNote(frankieValliMelody[0]);
         }
 
         function stopRomanticMelody() {
-            if (melodyInterval) clearInterval(melodyInterval);
+            if (melodyTimeout) clearTimeout(melodyTimeout);
         }
 
         // Navigation & Interaction Steps
@@ -511,7 +581,7 @@
             step2.classList.remove('hidden');
             window.scrollTo({ top: 0, behavior: 'smooth' });
 
-            // Start Audio automatically if desired
+            // Start Frankie Valli melody automatically when entering
             if (!isPlaying) {
                 toggleAudio();
             }
